@@ -1,0 +1,57 @@
+####################### Enigma I Army Configuration #######################
+
+# Plugboard configuration
+plugboard:
+  connections: "AQ EP TR BL VM KS JX DU CI FN"
+
+# Rotors configuration
+# From left to right
+rotors:
+  # Left rotor
+  - rotor: I
+    position: G
+    ringoffset: 0
+  # Middle rotor
+  - rotor: II
+    position: X
+    ringoffset: 0
+  # Right rotor
+  - rotor: III
+    position: R
+    ringoffset: 0
+
+# Reflector configuration
+reflector:
+  type: B
+
+###########################################################################
+
+# Alphabet
+etw: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+# Rotors wiring and notches
+rotorswiring:
+  - rotor: I
+    wiring: "EKMFLGDQVZNTOWYHXUSPAIBRCJ"
+    notch: Q
+  - rotor: II
+    wiring: "AJDKSIRUXBLHWTMCQGZNPYFVOE"
+    notch: E
+  - rotor: III
+    wiring: "BDFHJLCPRTXVZNYEIWGAKMUSQO"
+    notch: V
+  - rotor: IV
+    wiring: "ESOVPZJAYQUIRHXLNFTGKDCMWB"
+    notch: J
+  - rotor: V
+    wiring: "VZBRGITYUPSDNHLXAWMJQOFECK"
+    notch: Z
+
+# Reflector wiring
+reflectorswiring:
+  - reflector: A
+    wiring: "EJMZALYXVBWFCRQUONTSPIKHGD"
+  - reflector: B
+    wiring: "YRUHQSLDPXNGOKMIEBFZCWVJAT"
+  - reflector: C
+    wiring: "FVPJIAOYEDRZXWGCTKUQSBNMHL"
