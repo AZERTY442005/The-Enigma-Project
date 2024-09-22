@@ -9,15 +9,18 @@ plugboard:
 rotors:
   # Left rotor
   - rotor: I
+    # position: G
     position: G
     ringoffset: 0
   # Middle rotor
   - rotor: II
-    position: X
+    # position: X
+    position: E
     ringoffset: 0
   # Right rotor
   - rotor: III
-    position: R
+    # position: R
+    position: U
     ringoffset: 0
 
 # Reflector configuration

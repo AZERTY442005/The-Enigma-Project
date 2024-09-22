@@ -62,6 +62,8 @@ const prompt = inquirer.createPromptModule();
         // rotor.position = rotor.position.charCodeAt(0) - 'A'.charCodeAt(0) + 1;
         // rotor.notch = rotor.notch.charCodeAt(0) - 'A'.charCodeAt(0) + 1;
         rotor.offset = rotor.position.charCodeAt(0) - 'A'.charCodeAt(0) + 1 - 1;
+        rotor.notch = config.rotorswiring.find(rotorWiring => rotorWiring.rotor === rotor.rotor).notch;
+        rotor.moving = false;
         return rotor;
     });
     console.log(rotors);
@@ -84,8 +86,9 @@ const prompt = inquirer.createPromptModule();
 
     // Keyboard
     // let message = "";
-    // let message = "hello";
+    // let message = "hello world";
     let message = "AG";
+    // let message = "ceci est une phrase";
     // let message = "J";
     // let message = "Z";
     // try {
@@ -108,28 +111,51 @@ const prompt = inquirer.createPromptModule();
         let character = message[i].toUpperCase();
         console.log(character);
 
+        if (!etw.includes(character)) {
+            continue;
+        }
+
 
         // Moving Rotors
         console.log("\nRotors Movement")
-        /// Rotor 3
-        console.log(rotors[2].position)
-        rotors[2].position = String.fromCharCode((rotors[2].position.charCodeAt(0) + 1 - 'A'.charCodeAt(0)) % 26 + 'A'.charCodeAt(0));
-        rotors[2].offset = (rotors[2].offset + 1) % 26;
-        console.log(rotors[2].position)
-        /// Rotor 2
+        /// Pawl 3
+        rotors[2].moving = true;
+        /// Pawl 2
+        // console.log(`A: ${rotors[2].position} - ${rotors[2].notch}`)
         if (rotors[2].position === rotors[2].notch) {
-            console.log(rotors[1].position)
-            rotors[1].position = String.fromCharCode((rotors[1].position.charCodeAt(0) + 1 - 'A'.charCodeAt(0)) % 26 + 'A'.charCodeAt(0));
-            rotors[1].offset = (rotors[1].offset + 1) % 26;
-            console.log(rotors[1].position)
+            rotors[2].moving = true;
+            rotors[1].moving = true;
         }
-        /// Rotor 1
+        /// Pawl 1
+        // console.log(`B: ${rotors[1].position} - ${rotors[1].notch}`)
         if (rotors[1].position === rotors[1].notch) {
-            console.log(rotors[0].position)
+            rotors[1].moving = true;
+            rotors[0].moving = true;
+        }
+
+        if (rotors[0].moving) {
+            // console.log(`I: ${rotors[0].position}`)
             rotors[0].position = String.fromCharCode((rotors[0].position.charCodeAt(0) + 1 - 'A'.charCodeAt(0)) % 26 + 'A'.charCodeAt(0));
             rotors[0].offset = (rotors[0].offset + 1) % 26;
-            console.log(rotors[0].position)
+            // console.log(`I: ${rotors[0].position}`)
+            rotors[0].moving = false;
         }
+        if (rotors[1].moving) {
+            // console.log(`II: ${rotors[1].position}`)
+            rotors[1].position = String.fromCharCode((rotors[1].position.charCodeAt(0) + 1 - 'A'.charCodeAt(0)) % 26 + 'A'.charCodeAt(0));
+            rotors[1].offset = (rotors[1].offset + 1) % 26;
+            // console.log(`II: ${rotors[1].position}`)
+            rotors[1].moving = false;
+        }
+        if (rotors[2].moving) {
+            // console.log(`III: ${rotors[2].position}`)
+            rotors[2].position = String.fromCharCode((rotors[2].position.charCodeAt(0) + 1 - 'A'.charCodeAt(0)) % 26 + 'A'.charCodeAt(0));
+            rotors[2].offset = (rotors[2].offset + 1) % 26;
+            // console.log(`III: ${rotors[2].position}`)
+            rotors[2].moving = false;
+        }
+
+        console.log(rotors);
 
 
         // Plugboard
