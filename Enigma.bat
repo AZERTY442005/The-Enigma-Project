@@ -1,3 +1,5 @@
 @echo off
+:main
 node index.js
-pause
+REM pause
+goto :main

@@ -2,33 +2,32 @@
 
 # Plugboard configuration
 plugboard:
-  connections: "AQ EP TR BL VM KS JX DU CI FN"
+  connections: "BG CW DZ ET FO HL JQ NR PU VY"
 
 # Rotors configuration
 # From left to right
 rotors:
   # Left rotor
-  - rotor: I
-    # position: G
-    # position: Q
-    position: A
-    ringoffset: 1
+  - rotor: III
+    position: X
+    ringoffset: 5
   # Middle rotor
   - rotor: II
-    # position: X
-    # position: Y
-    position: A
-    ringoffset: 2
+    position: K
+    ringoffset: 13
   # Right rotor
-  - rotor: III
-    # position: R
-    # position: B
-    position: A
-    ringoffset: 3
+  - rotor: IV
+    position: M
+    ringoffset: 7
 
 # Reflector configuration
 reflector:
-  type: B
+  type: C
+
+# Show debug information during encryption/decryption
+debug: false
+# Set to null to prompt the user for the message
+message: null
 
 ###########################################################################
 

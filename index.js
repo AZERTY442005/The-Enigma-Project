@@ -4,15 +4,26 @@ const yaml = require("js-yaml");
 const inquirer = require("inquirer");
 const prompt = inquirer.createPromptModule();
 
+function letterOffset(letter, offset) {
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const index = alphabet.indexOf(letter);
+    if (index === -1) {
+        return letter;
+    }
+    return alphabet[(index + offset + alphabet.length) % alphabet.length];
+}
+
 (async () => {
 
     // AntiCrash
     process.on("uncaughtException", function (err) {
         console.error("Caught exception: ", err);
+        // Keep the process alive
         while (true) { }
     });
     process.on("unhandledRejection", function (reason, p) {
         console.error("Unhandled Rejection at: Promise ", p, " reason: ", reason);
+        // Keep the process alive
         while (true) { }
     });
 
@@ -41,21 +52,6 @@ const prompt = inquirer.createPromptModule();
             plugboard.push({ input: character, output: character });
         }
     });
-    // console.log(plugboard);
-
-    /**
-     * config:
-        * rotors:
-        *   - rotor: I
-        *       position: A
-        *       notch: Q
-        *   - rotor: II
-        *       position: B
-        *       notch: E
-        *   - rotor: III
-        *       position: C
-        *       notch: V
-     */
 
     // Setting up rotors
     const rotors = config.rotors.map(rotor => {
@@ -66,7 +62,7 @@ const prompt = inquirer.createPromptModule();
         rotor.moving = false;
         return rotor;
     });
-    console.log(rotors);
+    if (config.debug) console.log(rotors);
     const rotorWiring = config.rotorswiring
 
     // Setting up reflector
@@ -85,32 +81,31 @@ const prompt = inquirer.createPromptModule();
     */
 
     // Keyboard
-    // let message = "hello world";
-    let message = "AG";
-    // let message = "ceci est une phrase";
-    // let message = "J";
-    // let message = "Z";
-    // let message = "";
-    // try {
-    //     const answers = await prompt([
-    //         {
-    //             type: "input",
-    //             name: "message",
-    //             message: "Enter your message to encrypt:"
-    //         }
-    //     ]);
-    //     message = answers.message;
-    // } catch (error) {
-    //     console.error("Error during prompt:", error);
-    // }
-    // console.log(message);
+    let message = "";
+    if (config.message == null) {
+        try {
+            const answers = await prompt([
+                {
+                    type: "input",
+                    name: "message",
+                    message: "Enter your message to encrypt:"
+                }
+            ]);
+            message = answers.message;
+        } catch (error) {
+            console.error("Error during prompt:", error);
+        }
+    } else {
+        message = config.message;
+        console.log(message);
+    }
 
-    message = message.split("");
-
+    // Define the result variable
+    result = "";
 
     for (let i = 0; i < message.length; i++) {
         let character = message[i].toUpperCase();
-        console.log(character);
+        if (config.debug) console.log(character);
 
         if (!etw.includes(character)) {
             continue;
@@ -118,173 +113,188 @@ const prompt = inquirer.createPromptModule();
 
 
         // Moving Rotors
-        console.log("\nRotors Movement")
+        if (config.debug) console.log("\nRotors Movement")
         /// Pawl 3
         rotors[2].moving = true;
         /// Pawl 2
-        // console.log(`A: ${rotors[2].position} - ${rotors[2].notch}`)
         if (rotors[2].position === rotors[2].notch) {
             rotors[2].moving = true;
             rotors[1].moving = true;
         }
         /// Pawl 1
-        // console.log(`B: ${rotors[1].position} - ${rotors[1].notch}`)
         if (rotors[1].position === rotors[1].notch) {
             rotors[1].moving = true;
             rotors[0].moving = true;
         }
 
         if (rotors[0].moving) {
-            // console.log(`I: ${rotors[0].position}`)
-            rotors[0].position = String.fromCharCode((rotors[0].position.charCodeAt(0) + 1 - 'A'.charCodeAt(0)) % 26 + 'A'.charCodeAt(0));
+            rotors[0].position = letterOffset(rotors[0].position, 1);
             rotors[0].offset = (rotors[0].offset + 1) % 26;
-            // console.log(`I: ${rotors[0].position}`)
             rotors[0].moving = false;
         }
         if (rotors[1].moving) {
-            // console.log(`II: ${rotors[1].position}`)
-            rotors[1].position = String.fromCharCode((rotors[1].position.charCodeAt(0) + 1 - 'A'.charCodeAt(0)) % 26 + 'A'.charCodeAt(0));
+            rotors[1].position = letterOffset(rotors[1].position, 1);
             rotors[1].offset = (rotors[1].offset + 1) % 26;
-            // console.log(`II: ${rotors[1].position}`)
             rotors[1].moving = false;
         }
         if (rotors[2].moving) {
-            // console.log(`III: ${rotors[2].position}`)
-            rotors[2].position = String.fromCharCode((rotors[2].position.charCodeAt(0) + 1 - 'A'.charCodeAt(0)) % 26 + 'A'.charCodeAt(0));
+            rotors[2].position = letterOffset(rotors[2].position, 1);
             rotors[2].offset = (rotors[2].offset + 1) % 26;
-            // console.log(`III: ${rotors[2].position}`)
             rotors[2].moving = false;
         }
 
-        console.log(rotors);
+        if (config.debug) console.log(rotors);
 
 
         // Plugboard
-        console.log("\nPlugboard")
+        if (config.debug) console.log("\nPlugboard")
         let plugboardConnection = plugboard.find(connection => connection.input === character);
-        console.log(plugboardConnection);
+        if (config.debug) console.log(plugboardConnection);
         character = plugboardConnection.output;
-        console.log(character);
+        if (config.debug) console.log(character);
 
         // ETW
-        console.log("\nETW")
-        console.log(config.etw)
+        if (config.debug) console.log("\nETW")
+        if (config.debug) console.log(config.etw)
         character = config.etw[config.etw.indexOf(character) % config.etw.length];
-        console.log(character);
+        if (config.debug) console.log(character);
 
         // Rotor 3 Offset
         character = config.etw[(config.etw.indexOf(character) + rotors[2].offset + config.etw.length) % config.etw.length];
-        console.log(character);
+        if (config.debug) console.log(character);
 
         // Rotors
-        console.log("\nRotors")
+        if (config.debug) console.log("\nRotors")
         /// Rotor 3
-        let rotor1 = rotorWiring.find(rotor => rotor.rotor === rotors[2]?.rotor).wiring;
-        console.log(`Rotor 3 (${rotors[2].rotor}): ${rotors[2].offset}`)
-        console.log(config.etw)
-        console.log(rotor1)
-        character = rotor1[config.etw.indexOf(character)];
-        console.log(character)
+        let rotor3 = rotorWiring.find(rotor => rotor.rotor === rotors[2]?.rotor).wiring;
+        if (config.debug) console.log(`Rotor 3 (${rotors[2].rotor}): ${rotors[2].offset}`)
+        if (config.debug) console.log(config.etw)
+        if (config.debug) console.log(rotor3)
+        let rotor3backIndex = config.etw.indexOf(character);
+        let rotor3backIndexOffset = (rotor3backIndex - rotors[2].ringoffset + config.etw.length) % config.etw.length;
+        let rotor3backIndexTransfer = config.etw.indexOf(rotor3[rotor3backIndexOffset]);
+        let rotor3backIndexTransferOffset = (rotor3backIndexTransfer + rotors[2].ringoffset + config.etw.length) % config.etw.length
+        character = config.etw[rotor3backIndexTransferOffset];
+        if (config.debug) console.log(character)
 
         // Rotor 2 Offset
         character = config.etw[(config.etw.indexOf(character) + (rotors[1].offset - rotors[2].offset) + config.etw.length) % config.etw.length];
-        console.log(character);
+        if (config.debug) console.log(character);
 
         /// Rotor 2
         let rotor2 = rotorWiring.find(rotor => rotor.rotor === rotors[1]?.rotor).wiring;
-        console.log(`Rotor 2 (${rotors[1].rotor}): ${rotors[1].offset} (${rotors[1].offset - rotors[2].offset})`)
-        console.log(config.etw)
-        console.log(rotor2)
-        character = rotor2[config.etw.indexOf(character) % config.etw.length];
-        console.log(character)
+        if (config.debug) console.log(`Rotor 2 (${rotors[1].rotor}): ${rotors[1].offset} (${rotors[1].offset - rotors[2].offset})`)
+        if (config.debug) console.log(config.etw)
+        if (config.debug) console.log(rotor2)
+        let rotor2backIndex = config.etw.indexOf(character);
+        let rotor2backIndexOffset = (rotor2backIndex - rotors[1].ringoffset + config.etw.length) % config.etw.length;
+        let rotor2backIndexTransfer = config.etw.indexOf(rotor2[rotor2backIndexOffset]);
+        let rotor2backIndexTransferOffset = (rotor2backIndexTransfer + rotors[1].ringoffset + config.etw.length) % config.etw.length
+        character = config.etw[rotor2backIndexTransferOffset];
+        if (config.debug) console.log(character)
 
         // Rotor 1 Offset
         character = config.etw[(config.etw.indexOf(character) + (rotors[0].offset - rotors[1].offset) + config.etw.length) % config.etw.length];
-        console.log(character);
+        if (config.debug) console.log(character);
 
         /// Rotor 1
-        let rotor3 = rotorWiring.find(rotor => rotor.rotor === rotors[0]?.rotor).wiring;
-        console.log(`Rotor 1 (${rotors[0].rotor}): ${rotors[0].offset} (${rotors[0].offset - rotors[1].offset})`)
-        console.log(config.etw)
-        console.log(rotor3)
-        character = rotor3[config.etw.indexOf(character) % config.etw.length];
-        console.log(character)
+        let rotor1 = rotorWiring.find(rotor => rotor.rotor === rotors[0]?.rotor).wiring;
+        if (config.debug) console.log(`Rotor 1 (${rotors[0].rotor}): ${rotors[0].offset} (${rotors[0].offset - rotors[1].offset})`)
+        if (config.debug) console.log(config.etw)
+        if (config.debug) console.log(rotor1)
+        let rotor1backIndex = config.etw.indexOf(character);
+        let rotor1backIndexOffset = (rotor1backIndex - rotors[0].ringoffset + config.etw.length) % config.etw.length;
+        let rotor1backIndexTransfer = config.etw.indexOf(rotor1[rotor1backIndexOffset]);
+        let rotor1backIndexTransferOffset = (rotor1backIndexTransfer + rotors[0].ringoffset + config.etw.length) % config.etw.length
+        character = config.etw[rotor1backIndexTransferOffset];
+        if (config.debug) console.log(character)
 
         // Rotor 1 Offset
         character = config.etw[(config.etw.indexOf(character) - rotors[0].offset + config.etw.length) % config.etw.length];
-        console.log(character);
+        if (config.debug) console.log(character);
 
 
 
         // Reflector
-        console.log("\nReflector")
-        console.log(config.etw)
-        console.log(reflector)
+        if (config.debug) console.log("\nReflector")
+        if (config.debug) console.log(config.etw)
+        if (config.debug) console.log(reflector)
         character = reflector[config.etw.indexOf(character)];
-        console.log(character)
+        if (config.debug) console.log(character)
 
 
 
         // Rotor 1 Offset
         character = config.etw[(config.etw.indexOf(character) + rotors[0].offset + config.etw.length) % config.etw.length];
-        console.log(character);
+        if (config.debug) console.log(character);
 
 
         // Rotors
-        console.log("\nRotors")
+        if (config.debug) console.log("\nRotors")
         /// Rotor 1
-        rotor3 = rotorWiring.find(rotor => rotor.rotor === rotors[0]?.rotor).wiring;
-        console.log(`Rotor 1 (${rotors[0].rotor}): ${rotors[0].offset}`)
-        console.log(rotor3)
-        console.log(config.etw)
-        character = config.etw[rotor3.indexOf(character) % config.etw.length];
-        console.log(character)
+        rotor1 = rotorWiring.find(rotor => rotor.rotor === rotors[0]?.rotor).wiring;
+        if (config.debug) console.log(`Rotor 1 (${rotors[0].rotor}): ${rotors[0].offset}`)
+        if (config.debug) console.log(rotor1)
+        if (config.debug) console.log(config.etw)
+        let rotor1forthIndex = config.etw.indexOf(character);
+        let rotor1forthIndexOffset = (rotor1forthIndex - rotors[0].ringoffset + config.etw.length) % config.etw.length;
+        let rotor1forthIndexTransfer = rotor1.indexOf(config.etw[rotor1forthIndexOffset]);
+        let rotor1forthIndexTransferOffset = (rotor1forthIndexTransfer + rotors[0].ringoffset + config.etw.length) % config.etw.length
+        character = config.etw[rotor1forthIndexTransferOffset];
+        if (config.debug) console.log(character)
 
         // Rotor 1 Offset
         character = config.etw[(config.etw.indexOf(character) + (rotors[1].offset - rotors[0].offset) + config.etw.length) % config.etw.length];
-        console.log(character);
+        if (config.debug) console.log(character);
 
         /// Rotor 2
         rotor2 = rotorWiring.find(rotor => rotor.rotor === rotors[1]?.rotor).wiring;
-        console.log(`Rotor 2 (${rotors[1].rotor}): ${rotors[1].offset}`)
-        console.log(rotor2)
-        console.log(config.etw)
-        character = config.etw[rotor2.indexOf(character) % config.etw.length];
-        console.log(character)
+        if (config.debug) console.log(`Rotor 2 (${rotors[1].rotor}): ${rotors[1].offset}`)
+        if (config.debug) console.log(rotor2)
+        if (config.debug) console.log(config.etw)
+        let rotor2forthIndex = config.etw.indexOf(character);
+        let rotor2forthIndexOffset = (rotor2forthIndex - rotors[1].ringoffset + config.etw.length) % config.etw.length;
+        let rotor2forthIndexTransfer = rotor2.indexOf(config.etw[rotor2forthIndexOffset]);
+        let rotor2forthIndexTransferOffset = (rotor2forthIndexTransfer + rotors[1].ringoffset + config.etw.length) % config.etw.length
+        character = config.etw[rotor2forthIndexTransferOffset];
+        if (config.debug) console.log(character)
 
         // Rotor 2 Offset
         character = config.etw[(config.etw.indexOf(character) + (rotors[2].offset - rotors[1].offset) + config.etw.length) % config.etw.length];
-        console.log(character);
+        if (config.debug) console.log(character);
 
         /// Rotor 3
-        rotor1 = rotorWiring.find(rotor => rotor.rotor === rotors[2]?.rotor).wiring;
-        console.log(`Rotor 3 (${rotors[2].rotor}): ${rotors[2].offset} (${rotors[2].offset - rotors[1].offset})`)
-        console.log(rotor1)
-        console.log(config.etw)
-        character = config.etw[rotor1.indexOf(character) % config.etw.length];
-        console.log(character)
+        rotor3 = rotorWiring.find(rotor => rotor.rotor === rotors[2]?.rotor).wiring;
+        if (config.debug) console.log(`Rotor 3 (${rotors[2].rotor}): ${rotors[2].offset} (${rotors[2].offset - rotors[1].offset})`)
+        if (config.debug) console.log(rotor3)
+        if (config.debug) console.log(config.etw)
+        let rotor3forthIndex = config.etw.indexOf(character);
+        let rotor3forthIndexOffset = (rotor3forthIndex - rotors[2].ringoffset + config.etw.length) % config.etw.length;
+        let rotor3forthIndexTransfer = rotor3.indexOf(config.etw[rotor3forthIndexOffset]);
+        let rotor3forthIndexTransferOffset = (rotor3forthIndexTransfer + rotors[2].ringoffset + config.etw.length) % config.etw.length
+        character = config.etw[rotor3forthIndexTransferOffset];
+        if (config.debug) console.log(character)
 
         // Rotor 3 Offset
         character = config.etw[(config.etw.indexOf(character) - rotors[2].offset + config.etw.length) % config.etw.length];
-        console.log(character);
-
-
+        if (config.debug) console.log(character);
 
 
 
         // Plugboard
-        console.log("\nPlugboard")
+        if (config.debug) console.log("\nPlugboard")
         plugboardConnection = plugboard.find(connection => connection.input === character);
-        console.log(plugboardConnection);
+        if (config.debug) console.log(plugboardConnection);
         character = plugboardConnection.output;
-        console.log(character);
+        if (config.debug) console.log(character);
 
-        console.log("\n###############################################\n")
+        if (config.debug) console.log("\n###############################################\n")
 
-        message[i] = character;
+        result += character;
     }
     // Lampboard
-    message = message.join("").toLowerCase();
-    console.log(message);
+    result = result.toUpperCase();
+    console.log(result);
+    console.log();
 
 })();
