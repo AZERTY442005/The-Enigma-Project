@@ -7,6 +7,18 @@ function letterOffset(letter, offset) {
     return alphabet[(index + offset + alphabet.length) % alphabet.length];
 }
 
+/**
+ * enigma(message, etw, plugboard, rotors, rotorWiring, reflector, debug = false)
+ * @param {string} message
+ * @param {Array<string>} etw
+ * @param {Array<{input: string, output: string}>} plugboard
+ * @param {Array<{rotor: string, position: string, ringoffset: number, offset: number, notch: string, moving: boolean}>} rotors
+ * @param {Array<{rotor: string, wiring: string, notch: string}>} rotorWiring
+ * @param {string} reflector
+ * @param {boolean} debug
+ * @returns {string} result
+ */
+
 function enigma(message, etw, plugboard, rotors, rotorWiring, reflector, debug = false) {
     result = "";
 
