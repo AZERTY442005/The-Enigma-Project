@@ -19,6 +19,6 @@
   "dependencies": {
     "fs": "^0.0.1-security",
     "inquirer": "^11.0.2",
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.1"
   }
 }
